@@ -13,7 +13,7 @@ async function getWeather() {
         return;
     }
 
-    const weatherData = await getWeatherData(coordinates.lat, coordinates.lon);
+    const weatherData = await getWeatherData(coordinates.lat, coordinates.lon, city);
 
     if (!weatherData) {
         alert("Failed to get weather data!");
@@ -46,7 +46,7 @@ async function getCoordinates(city) {
     }
 }
 
-async function getWeatherData(lat, lon) {
+async function getWeatherData(lat, lon, city) {
     const proxyUrl = 'https://api.allorigins.win/get?url=';
     const apiUrl = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`;
 
@@ -61,7 +61,7 @@ async function getWeatherData(lat, lon) {
         const data = JSON.parse(json.contents);
 
         return {
-            name: `Weather at lat ${lat}, lon ${lon}`,
+            name: `Weather in ${city}`,
             description: data.properties.timeseries[0].data.next_1_hours.summary.symbol_code,
             temperature: data.properties.timeseries[0].data.instant.details.air_temperature,
         };
@@ -71,12 +71,47 @@ async function getWeatherData(lat, lon) {
     }
 }
 
+function getWeatherIcon(symbolCode) {
+    const iconMap = {
+        clearsky_day: "☀️ Clear Day",
+        clearsky_night: "🌕 Clear Night",
+        fair_day: "🌤️ Fair Day",
+        fair_night: "🌕🌤️ Fair Night",
+        cloudy: "☁️ Cloudy",
+        partlycloudy_day: "⛅ Partly Cloudy Day",
+        partlycloudy_night: "🌤️ Partly Cloudy Night",
+        rain: "🌧️ Rainy",
+        lightrain: "🌦️ Light Rain",
+        heavyrain: "🌧️🌧️ Heavy Rain",
+        heavyrainshowers_day: "🌧️☀️ Heavy Rainshowers Day",
+        heavyrainshowers_night: "🌧️🌕 Heavy Rainshowers Night",
+        lightrainshowers_day: "🌦️☀️ Light Rainshowers Day",
+        lightrainshowers_night: "🌦️🌕 Light Rainshowers Night",
+        snow: "❄️ Snow",
+        lightsnow: "🌨️ Light Snow",
+        heavysnow: "❄️❄️ Heavy Snow",
+        thunderstorm: "⛈️ Thunderstorm",
+        fog: "🌫️ Fog",
+        sleet: "🌨️🌧️ Sleet",
+        hail: "🌨️ Hail",
+        wind: "🌬️ Wind",
+        mist: "🌫️ Mist",
+        drizzle: "🌦️ Drizzle",
+        smoke: "🌫️ Smoke",
+        dust: "🌪️ Dust",
+    };
+
+    return iconMap[symbolCode] || symbolCode;
+}
+
 function displayWeather(data) {
     const weatherResult = document.getElementById("weather-result");
+    const icon = getWeatherIcon(data.description);
+
     weatherResult.innerHTML = `
         <h2>${data.name}</h2>
-        <p>${data.description}</p>
-        <p>Temperature: ${data.temperature}°C</p>
+        <p class='weather-data'>${icon}</p>
+        <p class='weather-data'>Temperature: ${data.temperature}°C</p>
     `;
 }
 
